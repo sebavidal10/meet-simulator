@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Meet - abc-defg-hij</title>
+  <!-- Google Fonts: Roboto & Material Symbols Outlined -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="meet-app">
+    <!-- TOP OVERLAYS (Recording / Live / Subtitles toast if needed) -->
+
+    <!-- MAIN WORKSPACE: STAGE + SIDE DRAWER -->
+    <main class="meet-main" id="meetMain">
+      <!-- PARTICIPANT GRID CONTAINER -->
+      <section class="stage-container" id="stageContainer">
+        <div class="participant-grid" id="participantGrid">
+          <!-- Renderizado dinámicamente por JS -->
+        </div>
+
+        <!-- REACTION EMOJI FLOATING BAR (Hidden by default) -->
+        <div class="reactions-bar hidden" id="reactionsBar">
+          <button class="reaction-btn" data-emoji="💖">💖</button>
+          <button class="reaction-btn" data-emoji="👍">👍</button>
+          <button class="reaction-btn" data-emoji="🎉">🎉</button>
+          <button class="reaction-btn" data-emoji="👏">👏</button>
+          <button class="reaction-btn" data-emoji="😂">😂</button>
+          <button class="reaction-btn" data-emoji="😮">😮</button>
+          <button class="reaction-btn" data-emoji="😢">😢</button>
+          <button class="reaction-btn" data-emoji="🤔">🤔</button>
+          <button class="reaction-btn" data-emoji="👎">👎</button>
+        </div>
+      </section>
+
+      <!-- RIGHT SIDE DRAWER (People, Chat, Details, Activities, Host Controls) -->
+      <aside class="side-drawer hidden" id="sideDrawer">
+        <!-- PANEL: PERSONAS -->
+        <div class="drawer-panel hidden" id="panelPeople">
+          <div class="drawer-header">
+            <h2>Personas</h2>
+            <button class="icon-close-btn" data-close-drawer title="Cerrar">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+
+          <div class="drawer-body">
+            <!-- Botón Agregar personas (abre input rápido o modal) -->
+            <div class="people-actions">
+              <button class="add-people-btn" id="toggleAddPeopleBtn">
+                <span class="material-symbols-outlined">person_add</span>
+                <span>Agregar personas</span>
+              </button>
+              <button class="quick-bulk-btn" id="openBulkModalBtn" title="Configuración rápida de nombres y reunión">
+                <span class="material-symbols-outlined">edit_note</span>
+                <span>Editar lista</span>
+              </button>
+            </div>
+
+            <!-- Formulario inline desplegable para agregar 1 o varios participantes -->
+            <form class="add-person-form hidden" id="addPersonForm">
+              <input
+                type="text"
+                id="newPersonInput"
+                placeholder="Nombre (o varios separados por coma)..."
+                autocomplete="off"
+              />
+              <button type="submit" class="btn-primary-sm">Añadir</button>
+            </form>
+
+            <!-- Buscador idéntico a Google Meet -->
+            <div class="search-box">
+              <span class="material-symbols-outlined search-icon">search</span>
+              <input type="text" id="searchPeopleInput" placeholder="Buscar personas" autocomplete="off" />
+            </div>
+
+            <div class="in-meeting-section-title">EN LA REUNIÓN</div>
+
+            <!-- Accordion de colaboradores -->
+            <div class="contributors-card">
+              <div class="contributors-header" id="contributorsAccordionBtn">
+                <span>Colaboradores</span>
+                <div class="contributors-header-right">
+                  <span class="contributors-count" id="drawerPeopleCount">0</span>
+                  <span class="material-symbols-outlined">expand_less</span>
+                </div>
+              </div>
+
+              <div class="contributors-list" id="drawerPeopleList">
+                <!-- Items generados por JS -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PANEL: CHAT -->
+        <div class="drawer-panel hidden" id="panelChat">
+          <div class="drawer-header">
+            <h2>Mensajes de la llamada</h2>
+            <button class="icon-close-btn" data-close-drawer title="Cerrar">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+          <div class="drawer-body chat-body">
+            <div class="chat-toggle-row">
+              <span>Permitir que todos envíen mensajes</span>
+              <label class="meet-switch">
+                <input type="checkbox" checked />
+                <span class="meet-slider"></span>
+              </label>
+            </div>
+
+            <div class="chat-notice">
+              Los mensajes solo pueden verlos las personas que están en la llamada y se borran cuando finaliza la reunión
+            </div>
+
+            <div class="chat-messages-list" id="chatMessagesList">
+              <!-- Mensajes simulados opcionales -->
+            </div>
+
+            <form class="chat-input-bar" id="chatForm">
+              <input type="text" id="chatInput" placeholder="Enviar un mensaje" autocomplete="off" />
+              <button type="submit" class="chat-send-btn" title="Enviar mensaje">
+                <span class="material-symbols-outlined">send</span>
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- PANEL: DETALLES DE LA REUNIÓN -->
+        <div class="drawer-panel hidden" id="panelDetails">
+          <div class="drawer-header">
+            <h2>Detalles de la reunión</h2>
+            <button class="icon-close-btn" data-close-drawer title="Cerrar">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+          <div class="drawer-body details-body">
+            <div class="details-section-title">Información para unirse</div>
+            <div class="details-url" id="detailsMeetingUrl">https://meet.google.com/abc-defg-hij</div>
+
+            <button class="copy-info-btn" id="copyInfoBtn">
+              <span class="material-symbols-outlined">content_copy</span>
+              <span>Copiar información para unirse</span>
+            </button>
+
+            <hr class="details-divider" />
+            <div class="details-calendar-note">
+              Los archivos adjuntos de Google Calendar aparecen aquí
+            </div>
+          </div>
+        </div>
+
+        <!-- PANEL: ACTIVIDADES -->
+        <div class="drawer-panel hidden" id="panelActivities">
+          <div class="drawer-header">
+            <h2>Actividades</h2>
+            <button class="icon-close-btn" data-close-drawer title="Cerrar">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+          <div class="drawer-body">
+            <div class="activity-item">
+              <div class="activity-icon-circle">
+                <span class="material-symbols-outlined">grid_view</span>
+              </div>
+              <div class="activity-text">
+                <div class="activity-title">Salas para grupos pequeños</div>
+                <div class="activity-desc">Dividir en debates más pequeños</div>
+              </div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-icon-circle">
+                <span class="material-symbols-outlined">bar_chart</span>
+              </div>
+              <div class="activity-text">
+                <div class="activity-title">Encuestas</div>
+                <div class="activity-desc">Hacer una votación rápida</div>
+              </div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-icon-circle">
+                <span class="material-symbols-outlined">quiz</span>
+              </div>
+              <div class="activity-text">
+                <div class="activity-title">Preguntas y respuestas</div>
+                <div class="activity-desc">Dar a todos una forma fácil de preguntar</div>
+              </div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-icon-circle">
+                <span class="material-symbols-outlined">radio_button_checked</span>
+              </div>
+              <div class="activity-text">
+                <div class="activity-title">Grabación</div>
+                <div class="activity-desc">Grabar reuniones para verlas a pedido</div>
+              </div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-icon-circle">
+                <span class="material-symbols-outlined">draw</span>
+              </div>
+              <div class="activity-text">
+                <div class="activity-title">Pizarra</div>
+                <div class="activity-desc">Colaborar en un lienzo digital</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PANEL: CONTROLES DEL ORGANIZADOR -->
+        <div class="drawer-panel hidden" id="panelHost">
+          <div class="drawer-header">
+            <h2>Controles del organizador</h2>
+            <button class="icon-close-btn" data-close-drawer title="Cerrar">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+          <div class="drawer-body host-body">
+            <p class="host-subtitle">Usa esta configuración para mantener el control de la reunión. Solo los organizadores tienen acceso a estos controles.</p>
+            <div class="host-section-label">MODERACIÓN DE LA REUNIÓN</div>
+            <div class="host-toggle-row">
+              <div>
+                <div class="host-row-title">Administración de organizadores</div>
+                <div class="host-row-desc">Te permite restringir lo que los participantes pueden hacer en la reunión</div>
+              </div>
+              <label class="meet-switch">
+                <input type="checkbox" checked />
+                <span class="meet-slider"></span>
+              </label>
+            </div>
+            <div class="host-section-label">PERMITIR QUE TODOS LOS PARTICIPANTES</div>
+            <div class="host-toggle-row">
+              <span>Compartan su pantalla</span>
+              <label class="meet-switch">
+                <input type="checkbox" checked />
+                <span class="meet-slider"></span>
+              </label>
+            </div>
+            <div class="host-toggle-row">
+              <span>Envíen mensajes de chat</span>
+              <label class="meet-switch">
+                <input type="checkbox" checked />
+                <span class="meet-slider"></span>
+              </label>
+            </div>
+            <div class="host-toggle-row">
+              <span>Envíen reacciones</span>
+              <label class="meet-switch">
+                <input type="checkbox" checked />
+                <span class="meet-slider"></span>
+              </label>
+            </div>
+            <div class="host-toggle-row">
+              <span>Activen su micrófono</span>
+              <label class="meet-switch">
+                <input type="checkbox" checked />
+                <span class="meet-slider"></span>
+              </label>
+            </div>
+            <div class="host-toggle-row">
+              <span>Activen su video</span>
+              <label class="meet-switch">
+                <input type="checkbox" checked />
+                <span class="meet-slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </main>
+
+    <!-- POPUP MENUS (More Options / Present Menu) -->
+    <!-- Menú Más Opciones (3 puntos) -->
+    <div class="popup-menu hidden" id="moreOptionsMenu">
+      <button class="popup-item" data-menu-action="whiteboard">
+        <span class="material-symbols-outlined">draw</span>
+        <div class="popup-item-text">
+          <span>Pizarra</span>
+          <small>Abrir un Jam nuevo</small>
+        </div>
+      </button>
+      <button class="popup-item" data-menu-action="record">
+        <span class="material-symbols-outlined">radio_button_checked</span>
+        <div class="popup-item-text">
+          <span>Gestionar grabación</span>
+        </div>
+      </button>
+      <hr class="popup-divider" />
+      <button class="popup-item" data-menu-action="layout">
+        <span class="material-symbols-outlined">dashboard</span>
+        <div class="popup-item-text">
+          <span>Cambiar diseño</span>
+        </div>
+      </button>
+      <button class="popup-item" id="fullscreenMenuBtn">
+        <span class="material-symbols-outlined">fullscreen</span>
+        <div class="popup-item-text">
+          <span>Pantalla completa</span>
+        </div>
+      </button>
+      <button class="popup-item" data-menu-action="pip">
+        <span class="material-symbols-outlined">picture_in_picture_alt</span>
+        <div class="popup-item-text">
+          <span>Abrir pantalla en pantalla</span>
+        </div>
+      </button>
+      <button class="popup-item" data-menu-action="effects">
+        <span class="material-symbols-outlined">auto_awesome</span>
+        <div class="popup-item-text">
+          <span>Aplicar efectos visuales</span>
+        </div>
+      </button>
+      <button class="popup-item" data-menu-action="captions">
+        <span class="material-symbols-outlined">closed_caption</span>
+        <div class="popup-item-text">
+          <span>Activar subtítulos</span>
+        </div>
+      </button>
+      <button class="popup-item" data-menu-action="phone">
+        <span class="material-symbols-outlined">call</span>
+        <div class="popup-item-text">
+          <span>Usar un teléfono para hablar y escuchar el audio</span>
+        </div>
+      </button>
+      <hr class="popup-divider" />
+      <button class="popup-item" data-menu-action="report">
+        <span class="material-symbols-outlined">sms_failed</span>
+        <div class="popup-item-text">
+          <span>Informar un problema</span>
+        </div>
+      </button>
+      <button class="popup-item" data-menu-action="abuse">
+        <span class="material-symbols-outlined">report</span>
+        <div class="popup-item-text">
+          <span>Denunciar abuso</span>
+        </div>
+      </button>
+      <button class="popup-item" data-menu-action="troubleshoot">
+        <span class="material-symbols-outlined">Query_stats</span>
+        <div class="popup-item-text">
+          <span>Solución de problemas y ayuda</span>
+        </div>
+      </button>
+      <button class="popup-item" id="openSettingsFromMenuBtn">
+        <span class="material-symbols-outlined">settings</span>
+        <div class="popup-item-text">
+          <span>Configuración (Editar participantes)</span>
+        </div>
+      </button>
+    </div>
+
+    <!-- Menú Presentar Ahora -->
+    <div class="popup-menu present-popup hidden" id="presentMenu">
+      <div class="popup-header-label">Presentar</div>
+      <button class="popup-item">
+        <span class="material-symbols-outlined">tab</span>
+        <div class="popup-item-text"><span>Una pestaña</span><small>Ideal para videos y animaciones</small></div>
+      </button>
+      <button class="popup-item">
+        <span class="material-symbols-outlined">web_asset</span>
+        <div class="popup-item-text"><span>Una ventana</span></div>
+      </button>
+      <button class="popup-item">
+        <span class="material-symbols-outlined">desktop_windows</span>
+        <div class="popup-item-text"><span>Toda tu pantalla</span></div>
+      </button>
+    </div>
+
+    <!-- BOTTOM CONTROL BAR -->
+    <footer class="meet-footer">
+      <!-- Left: Time & Meeting Code (Click to open Quick Config Modal) -->
+      <div class="footer-left" id="meetingInfoTrigger" title="Haz clic para configurar hora, código o lista de participantes">
+        <span class="meeting-time" id="meetingTime">13:00</span>
+        <span class="meeting-separator">|</span>
+        <span class="meeting-code" id="meetingCode">abc-defg-hij</span>
+      </div>
+
+      <!-- Center: Call Controls -->
+      <div class="footer-center">
+        <!-- Mic Button Group (Split pill with chevron like modern Meet) -->
+        <div class="split-ctrl-group" id="micGroup">
+          <button class="ctrl-split-arrow" title="Configuración de micrófono">
+            <span class="material-symbols-outlined">keyboard_arrow_up</span>
+          </button>
+          <button class="ctrl-btn" id="micBtn" title="Desactivar micrófono (ctrl + d)">
+            <span class="material-symbols-outlined" id="micIcon">mic</span>
+          </button>
+        </div>
+
+        <!-- Cam Button Group (Muted/Red by default since we show initials) -->
+        <div class="split-ctrl-group is-muted" id="camGroup">
+          <button class="ctrl-split-arrow" title="Configuración de cámara">
+            <span class="material-symbols-outlined">keyboard_arrow_up</span>
+          </button>
+          <button class="ctrl-btn is-muted" id="camBtn" title="Activar cámara (ctrl + e)">
+            <span class="material-symbols-outlined" id="camIcon">videocam_off</span>
+          </button>
+        </div>
+
+        <!-- Subtítulos -->
+        <button class="ctrl-btn" id="ccBtn" title="Activar subtítulos (c)">
+          <span class="material-symbols-outlined">closed_caption</span>
+        </button>
+
+        <!-- Reacciones -->
+        <button class="ctrl-btn" id="reactionsBtn" title="Enviar una reacción">
+          <span class="material-symbols-outlined">mood</span>
+        </button>
+
+        <!-- Presentar ahora -->
+        <button class="ctrl-btn" id="presentBtn" title="Presentar ahora">
+          <span class="material-symbols-outlined">present_to_all</span>
+        </button>
+
+        <!-- Levantar la mano -->
+        <button class="ctrl-btn" id="handBtn" title="Levantar la mano (ctrl + alt + h)">
+          <span class="material-symbols-outlined">back_hand</span>
+        </button>
+
+        <!-- Más opciones -->
+        <button class="ctrl-btn" id="moreOptionsBtn" title="Más opciones">
+          <span class="material-symbols-outlined">more_vert</span>
+        </button>
+
+        <!-- Salir de la llamada -->
+        <button class="ctrl-btn end-call-btn" id="endCallBtn" title="Salir de la llamada">
+          <span class="material-symbols-outlined">call_end</span>
+        </button>
+      </div>
+
+      <!-- Right: Side Panel Toggles -->
+      <div class="footer-right">
+        <button class="side-toggle-btn" data-drawer="panelDetails" title="Detalles de la reunión">
+          <span class="material-symbols-outlined">info</span>
+        </button>
+
+        <div class="people-btn-wrapper">
+          <button class="side-toggle-btn" data-drawer="panelPeople" id="peopleDrawerBtn" title="Mostrar a todos">
+            <span class="material-symbols-outlined">group</span>
+          </button>
+          <span class="participant-count-badge" id="footerPeopleBadge">1</span>
+        </div>
+
+        <button class="side-toggle-btn" data-drawer="panelChat" title="Chatear con todos">
+          <span class="material-symbols-outlined">chat</span>
+        </button>
+
+        <button class="side-toggle-btn" data-drawer="panelActivities" title="Actividades">
+          <span class="material-symbols-outlined">category</span>
+        </button>
+
+        <button class="side-toggle-btn" data-drawer="panelHost" title="Controles del organizador">
+          <span class="material-symbols-outlined">lock_person</span>
+        </button>
+      </div>
+    </footer>
+
+    <!-- MODAL DE CONFIGURACIÓN RÁPIDA DE PARTICIPANTES Y REUNIÓN -->
+    <div class="modal-backdrop hidden" id="bulkModalBackdrop">
+      <div class="config-modal">
+        <div class="config-modal-header">
+          <div>
+            <h3>Configurar Simulador de Google Meet</h3>
+            <p>Ingresa los nombres de los participantes (uno por línea). Se ocultará al guardar.</p>
+          </div>
+          <button class="icon-close-btn" id="closeBulkModalBtn">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <div class="config-modal-body">
+          <div class="config-row-2col">
+            <div class="config-field">
+              <label for="configCodeInput">Código o título de la reunión</label>
+              <input type="text" id="configCodeInput" value="abc-defg-hij" />
+            </div>
+            <div class="config-field">
+              <label for="configTimeInput">Hora mostrada (dejar vacío = hora real)</label>
+              <input type="text" id="configTimeInput" placeholder="Ej: 10:30" />
+            </div>
+          </div>
+
+          <div class="config-field">
+            <label for="bulkParticipantsTextarea">
+              Lista de Participantes (un nombre por línea)
+              <span class="config-hint">Tip: Agrega <code>*</code> al final de un nombre si quieres que aparezca con micrófono abierto/hablando, o <code>!</code> para mano levantada.</span>
+            </label>
+            <textarea id="bulkParticipantsTextarea" rows="9" placeholder="Juan Pérez&#10;María García *&#10;Carlos López"></textarea>
+          </div>
+
+          <div class="config-tips">
+            <strong>Atajos interactivos en la pantalla:</strong>
+            <ul>
+              <li><strong>Clic en cualquier tarjeta:</strong> Alterna el micrófono (silenciado / activo hablando) de esa persona.</li>
+              <li><strong>Shift + Clic en una tarjeta:</strong> Levanta / baja la mano de esa persona.</li>
+              <li><strong>Clic en la hora o código (abajo a la izquierda):</strong> Abre este panel nuevamente en cualquier momento.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="config-modal-footer">
+          <button class="btn-secondary" id="cancelBulkModalBtn">Cancelar</button>
+          <button class="btn-primary" id="saveBulkModalBtn">Aplicar cambios</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
