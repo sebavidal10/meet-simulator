@@ -14,9 +14,17 @@ const GOOGLE_AVATAR_COLORS = [
   '#f4511e'  // Deep Orange
 ];
 
+// Generador de código de reunión aleatorio con formato oficial de Google Meet (xxx-xxxx-xxx)
+function generateRandomMeetCode() {
+  const chars = 'abcdefghijklmnopqrstuvwxyz';
+  const pick = (len) =>
+    Array.from({ length: len }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+  return `${pick(3)}-${pick(4)}-${pick(3)}`;
+}
+
 // Estado inicial del simulador
 const state = {
-  meetingCode: 'abc-defg-hij',
+  meetingCode: generateRandomMeetCode(),
   customTime: '', // Si está vacío, usa el reloj real del sistema
   searchQuery: '',
   activeDrawer: null, // 'panelPeople' | 'panelChat' | 'panelDetails' | 'panelActivities' | 'panelHost' | null
@@ -593,7 +601,7 @@ closeBulkModalBtn.addEventListener('click', closeBulkModal);
 cancelBulkModalBtn.addEventListener('click', closeBulkModal);
 
 saveBulkModalBtn.addEventListener('click', () => {
-  const newCode = configCodeInput.value.trim() || 'abc-defg-hij';
+  const newCode = configCodeInput.value.trim() || generateRandomMeetCode();
   state.meetingCode = newCode;
   state.customTime = configTimeInput.value.trim();
 
